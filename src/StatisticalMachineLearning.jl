@@ -3,6 +3,11 @@ import NearestNeighbors: knn
 
 export Picture, TrainTestSplit, remove_constant, flatten, unflatten, visualize_picture, classify, knn, knn_acc
 
+"""
+    Picture(ID::Int, class::Int, data::Vector{T})
+
+A type to hold the information about a picture.
+"""
 struct Picture{T}
     ID::Int
     class::Int
@@ -48,6 +53,9 @@ import Base: show
 show(io::IO, p::Picture) = println(io, "A $(p.class) drawn by $(p.ID)")
 show(io::IO, tts::TrainTestSplit) = println(io, "A TrainTestSplit object with $(tts.n) entries, of train to test ratio $(tts.ratio)")
 
+"""
+    flatten(m::AbstractMatrix) = vcat(eachcol(m)...)
+"""
 flatten(m::AbstractMatrix) = vcat(eachcol(m)...)
 function unflatten(x::AbstractArray)
     try
@@ -58,6 +66,12 @@ function unflatten(x::AbstractArray)
     batches = [x[sidelength*(i-1)+1:sidelength*i] for i in 1:sidelength]
     return hcat(batches...)
 end
+
+"""
+    visualize_picture(data::AbstractMatrix, colormap::Symbol=:viridis)
+    visualize_picture(data::AbstractVector, colormap::Symbol=:viridis)
+    visualize_picture(p::Picture, colormap::Symbol=:viridis)
+"""
 function visualize_picture(data::AbstractMatrix, colormap::Symbol=:viridis)
     fig, ax = heatmap(data, figure=(resolution=(400, 400),); colormap)
     hidedecorations!(ax)
@@ -127,6 +141,12 @@ function knn_acc(tts::TrainTestSplit{<:Real}; tiebreaker=rand, kwargs...)
 	return mean(preds .== testclasses(tts))
 end
 
+"""
+    remove_constant(pics::Vector{Picture})
+
+Return a version of the input vector, without the pixels which
+are all constant.
+"""
 function remove_constant(pics::Vector{Picture{T}}) where {T<:Real}
     datatogether = hcat(getfield.(pics, :data)...)
     bad_row_inds = Int64[]
