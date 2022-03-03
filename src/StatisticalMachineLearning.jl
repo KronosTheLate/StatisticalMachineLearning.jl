@@ -165,6 +165,6 @@ end
 Return the data of all pictures in `pics`.
 A column in the returned Matrix represents a single picture.
 """
-datamat(pics::Vector{Picture}) = hcat(getfield.(pics, :data)...)
+datamat(pics::Vector{Picture{T}}) where {T<:Real} = hcat(getfield.(pics, :data)...)
 
 end
