@@ -1,7 +1,7 @@
 module StatisticalMachineLearning
 import NearestNeighbors: knn
 
-export Picture, TrainTestSplit, remove_constant, flatten, unflatten, visualize_picture, classify, knn, knn_acc
+export Picture, TrainTestSplit, remove_constant, flatten, unflatten, visualize_picture, classify, knn, knn_acc, datamat
 
 """
     Picture(ID::Int, class::Int, data::Vector{T})
