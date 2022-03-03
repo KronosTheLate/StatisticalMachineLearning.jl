@@ -1,7 +1,7 @@
 name = "StatisticalMachineLearning"
 uuid = "0d7b4922-57e9-4bd4-87a7-ac5e20e63b0b"
 authors = ["KronosTheLate"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 NearestNeighbors = "b8a86587-4115-5ab1-83bc-aa920d37bbce"
