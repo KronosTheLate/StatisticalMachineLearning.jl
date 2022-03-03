@@ -159,4 +159,12 @@ function remove_constant(pics::Vector{Picture{T}}) where {T<:Real}
     return [Picture(pics[i].ID, pics[i].class, reduced_data[:, i]) for i in eachindex(pics)]
 end
 
+"""
+    datamat(pics::Vector{Picture}) = hcat(getfield.(pics, :data)...)
+
+Return the data of all pictures in `pics`.
+A column in the returned Matrix represents a single picture.
+"""
+datamat(pics::Vector{Picture}) = hcat(getfield.(pics, :data)...)
+
 end
