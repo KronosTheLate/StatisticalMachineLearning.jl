@@ -1,5 +1,9 @@
 module StatisticalMachineLearning
+
+using Statistics
+using Random
 import NearestNeighbors: knn
+import Base: show
 
 export Picture, TrainTestSplit, remove_constant, flatten, unflatten, visualize_picture, classify, knn, knn_acc, datamat
 
@@ -49,7 +53,6 @@ end
 testclasses(tts::TrainTestSplit) = getfield.(tts.test, :class)
 trainclasses(tts::TrainTestSplit) = getfield.(tts.train, :class)
 
-import Base: show
 show(io::IO, p::Picture) = println(io, "A $(p.class) drawn by $(p.ID)")
 show(io::IO, tts::TrainTestSplit) = println(io, "A TrainTestSplit object with $(tts.n) entries, of train to test ratio $(tts.ratio)")
 
@@ -142,21 +145,16 @@ function knn_acc(tts::TrainTestSplit{<:Real}; tiebreaker=rand, kwargs...)
 end
 
 """
-    remove_constant(pics::Vector{Picture})
+	knn_acc_crossvalidate(pics::Vector{Picture}, ratio::Rational = 9//1)
 
-Return a version of the input vector, without the pixels which
-are all constant.
+Shuffle `pics` ratio.num + ratio.den times, make a TrainTestSplit for each, and calculate
+the mean and standard deviation of the classification accuracy of each.
 """
-function remove_constant(pics::Vector{Picture{T}}) where {T<:Real}
-    datatogether = hcat(getfield.(pics, :data)...)
-    bad_row_inds = Int64[]
-    for i in 1:size(datatogether, 1)
-        if maximum(datatogether[i, :]) == minimum(datatogether[i, :])
-            push!(bad_row_inds, i)
-        end
-    end
-    reduced_data = datatogether[1:size(datatogether, 1) .∉ [bad_row_inds], :]
-    return [Picture(pics[i].ID, pics[i].class, reduced_data[:, i]) for i in eachindex(pics)]
+function knn_acc_crossvalidate(pics::Vector{Picture{T}}, ratio::Rational = 9//1) where {T<:Real}
+	n_runs = ratio.num + ratio.den
+	temp_TTSs = [TrainTestSplit(pics, ratio) for _ in 1:n_runs]
+    x = [knn_acc(tts, k=3) for tts in temp_TTSs]
+    (mean=mean(x), std=std(x), n_runs = n_runs)
 end
 
 """
@@ -166,5 +164,24 @@ Return the data of all pictures in `pics`.
 A column in the returned Matrix represents a single picture.
 """
 datamat(pics::Vector{Picture{T}}) where {T<:Real} = hcat(getfield.(pics, :data)...)
+datamat(tts::TrainTestSplit{T}) where {T<:Real} = (train=datamat(tts.train), test=datamat(tts.test))
+
+function remove_constant(m::AbstractMatrix)
+    bad_row_inds = Int64[]
+    all_row_inds = 1:size(m, 1) |> Vector
+    for i in all_row_inds
+        if maximum(m[i, :]) == minimum(m[i, :])
+            push!(bad_row_inds, i)
+        end
+    end
+    reduced_data = m[deleteat!(all_row_inds, bad_row_inds), :]
+    return reduced_data
+end
+
+function remove_constant(pics::Vector{Picture{T}}) where {T<:Real}
+    datatogether = datamat(pics)
+    reduced_datamat = remove_constant(datatogether)
+    return [Picture(pics[i].ID, pics[i].class, reduced_datamat[:, i]) for i in eachindex(pics)]
+end
 
 end
